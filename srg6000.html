@@ -29,10 +29,15 @@
             animation: none;
         }
 
-    /* Keď je prehliadač vo fullscreene, zväčši celý rám */
-:fullscreen .computer-frame {
-    transform: scale(1.4); /* Tu môžeš zmeniť číslo (napr. 1.2 alebo 1.5) podľa tvojho monitora */
-    transform-origin: center center;
+.computer-frame {
+    width: 1000px;
+    height: 667px;
+    background-image: url('textura.png'); 
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    position: relative; /* Dôležité: ostane na mieste */
+    transition: transform 0.3s ease-in-out;
+    margin: auto; /* Vycentruje ho */
 }
 
 /* Podpora pre Chrome a Safari */
@@ -361,24 +366,28 @@ function toggleFullScreen(event) {
     const frame = document.querySelector('.computer-frame');
 
     if (!document.fullscreenElement) {
-        // Tento príkaz sa pokúša o "Immersive Mode" na Androide
+        // Zapnutie Fullscreenu
         const requestMethod = doc.requestFullscreen || doc.webkitRequestFullscreen;
         
         if (requestMethod) {
             requestMethod.call(doc).then(() => {
-                // Vynútené zväčšenie na maximum
-                const scale = Math.max(window.innerWidth / 1000, window.innerHeight / 667);
-                frame.style.transform = `scale(${scale})`;
-                frame.style.transformOrigin = 'center center';
-                
-                // Skrytie kurzora pre lepší pocit z dotyku
-                document.body.style.cursor = 'none';
+                // Počkáme na prekreslenie obrazovky
+                setTimeout(() => {
+                    // Vypočítame mierku tak, aby sa to zmestilo, ale nezmizlo
+                    const scale = Math.min(window.innerWidth / 1000, window.innerHeight / 667);
+                    
+                    frame.style.transformOrigin = 'center center';
+                    frame.style.transform = `scale(${scale})`;
+                    
+                    // Uistíme sa, že nie je čierna obrazovka
+                    frame.style.display = 'block'; 
+                }, 300);
             });
         }
     } else {
+        // Návrat do normálu
         if (document.exitFullscreen) { document.exitFullscreen(); }
         frame.style.transform = 'scale(1)';
-        document.body.style.cursor = 'default';
     }
 }
 
