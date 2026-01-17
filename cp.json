@@ -1,0 +1,30 @@
+{
+  "11": {
+    "smer": "Nižná Šebastová",
+    "kurzy": [
+      { "id": "42", "cas": "13:07" },
+      { "id": "42", "cas": "14:07" },
+      { "id": "42", "cas": "15:07" },
+      { "id": "42", "cas": "21:07" }
+    ],
+    "zastavky": [
+      { "n": "Solivar", "u": "Solivarská ul.", "min": 0 },
+      { "n": "Múzeum Solivar", "u": "Smetanova ul.", "min": 1 },
+      { "n": "Bohúňova", "u": "Bohúňova ul.", "min": 2 },
+      { "n": "Solivarská", "u": "Solivarská ul.", "min": 3 },
+      { "n": "Škára", "u": "Arm. gen. Svobodu", "min": 5 },
+      { "n": "Železničná stanica", "u": "Masarykova ul.", "min": 7 },
+      { "n": "Čierny most", "u": "Masarykova ul.", "min": 9 },
+      { "n": "Divadlo J. Záborského", "u": "Grešova ul.", "min": 11 },
+      { "n": "Na Hlavnej", "u": "Hlavná ul.", "min": 12 },
+      { "n": "Trojica", "u": "Hlavná ul.", "min": 14 },
+      { "n": "Duklianska", "u": "Duklianska ul.", "min": 16 },
+      { "n": "Rázcestie Kúty", "u": "Prešovská ul.", "min": 18 },
+      { "n": "Dopravný podnik", "u": "Bardejovská ul.", "min": 19 },
+      { "n": "Šarišské Lúky", "u": "Bardejovská ul.", "min": 21 },
+      { "n": "Vranovská", "u": "Vranovská ul.", "min": 22 },
+      { "n": "Pažica", "u": "Vranovská ul.", "min": 23 },
+      { "n": "Nižná Šebastová", "u": "Vranovská ul.", "min": 24 }
+    ]
+  }
+}

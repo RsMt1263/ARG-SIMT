@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <title>R&G SRG-6000P Profesionál</title>
+    <style>
+        body {
+            background-color: #000;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            color: white;
+            overflow: hidden;
+        }
+
+        .computer-frame {
+            width: 1000px;
+            height: 667px;
+            background-image: url('textura.png'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+
+        #clock {
+            position: absolute;
+            top: 80px;
+            right: 240px;
+            font-size: 40px;
+            color: #fff;
+        }
+
+        #direction {
+            position: absolute;
+            top: 136px;
+            left: 175px;
+            width: 820px;
+            font-size: 35px;
+            color: #ccc;
+            text-align: left;
+        }
+
+        .line-info {
+            position: absolute;
+            top: 189px;
+            left: 244px;
+            font-size: 22px;
+        }
+        
+        .vehicle-info {
+            position: absolute;
+            top: 189.5px;
+            right: 380px;
+            font-size: 20px;
+        }
+
+        .stop-count {
+            position: absolute;
+            top: 213px;
+            left: 280px;
+            font-size: 20px;
+        }
+
+        #marker {
+            position: absolute;
+            top: 267px;
+            left: 170px;
+            width: 0; height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 22px solid #5cb85c;
+            transition: left 0.5s ease;
+        }
+
+        .current-stop-container {
+            position: absolute;
+            top: 343px;
+            left: 75px;
+            width: 785px;
+            text-align: center;
+        }
+        #stop-name { font-size: 24px; margin: 0; }
+        #street-name { font-size: 24px; color: #eee; margin: 0; }
+
+        .prev-stops {
+            position: absolute;
+            top: 404px;
+            left: 135px;
+            width: 275px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .stop-item { height: 32px; display: flex; align-items: center; justify-content: center; }
+
+        .next-stops {
+            position: absolute;
+            top: 404.5px;
+            right: 195px;
+            width: 275px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+/* Rýchlejšie striedanie: 0.5s Biela, 0.5s Červená */
+@keyframes sharp-blink {
+    0%, 49.9% { color: #ffffff; }
+    50%, 100% { color: #ff0000; }
+}
+
+#delay {
+    position: absolute;
+    top: 412px;
+    left: 330px;
+    width: 280px;
+    font-size: 45px;
+    text-align: center;
+    color: #fff;
+    /* Tu môžeš tiež nechať 1s pre istotu */
+    animation-duration: 2s;
+}
+
+        .btn-overlay {
+            position: absolute;
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="computer-frame" onclick="pipni()">
+        <div id="clock">00:00:00</div>
+        <div id="direction">---</div>
+        
+        <div class="line-info">-</div>
+        <div class="vehicle-info">803</div>
+        <div class="stop-count"><span id="curr-idx">0</span>/0</div>
+
+        <div id="marker"></div>
+
+        <div class="current-stop-container">
+            <p id="stop-name">---</p>
+            <p id="street-name">---</p>
+        </div>
+
+        <div class="prev-stops">
+            <div class="stop-item" id="p2">-</div>
+            <div class="stop-item" id="p1">-</div>
+        </div>
+
+        <div id="delay">00:00</div>
+
+        <div class="next-stops">
+            <div class="stop-item" id="n1">-</div>
+            <div class="stop-item" id="n2">-</div>
+        </div>
+
+        <div class="btn-overlay" style="top: 155px; left: 95px; width: 65px; height: 65px;" onclick="nasledujuciSpoj()"></div>
+        <div class="btn-overlay" style="top: 495px; left: 340px; width: 70px; height: 65px;" onclick="move(-1)"></div>
+        <div class="btn-overlay" style="top: 495px; left: 565px; width: 40px; height: 65px;" onclick="move(1)"></div>
+        <div class="btn-overlay" style="top: 495px; left: 630px; width: 155px; height: 70px;" onclick="logout()"></div>
+    </div>
+
+    <audio id="click-sound" src="zvuk1.wav" preload="auto"></audio>
+
+<script>
+    const trasaSmerSebastova = [
+        {n: "Solivar", u: "Solivarská ul.", min: 0}, {n: "Múzeum Solivar", u: "Smetanova ul.", min: 1},
+        {n: "Bohúňova", u: "Bohúňova ul.", min: 2}, {n: "Solivarská", u: "Solivarská ul.", min: 3},
+        {n: "Škára", u: "Arm. gen. Svobodu", min: 5}, {n: "Železničná stanica", u: "Masarykova ul.", min: 7},
+        {n: "Čierny most", u: "Masarykova ul.", min: 9}, {n: "Divadlo J. Záborského", u: "Grešova ul.", min: 11},
+        {n: "Na Hlavnej", u: "Hlavná ul.", min: 12}, {n: "Trojica", u: "Hlavná ul.", min: 14},
+        {n: "Duklianska", u: "Duklianska ul.", min: 16}, {n: "Rázcestie Kúty", u: "Prešovská ul.", min: 18},
+        {n: "Dopravný podnik", u: "Bardejovská ul.", min: 19}, {n: "Šarišské Lúky", u: "Bardejovská ul.", min: 21},
+        {n: "Vranovská", u: "Vranovská ul.", min: 22}, {n: "Pažica", u: "Vranovská ul.", min: 23},
+        {n: "Nižná Šebastová", u: "Vranovská ul.", min: 24}
+    ];
+
+    const trasaSmerSolivar = [
+        {n: "Nižná Šebastová", u: "Vranovská ul.", min: 0}, {n: "Pažica", u: "Vranovská ul.", min: 1},
+        {n: "Vranovská", u: "Vranovská ul.", min: 2}, {n: "Šarišské Lúky", u: "Bardejovská ul.", min: 3},
+        {n: "Dopravný podnik", u: "Bardejovská ul.", min: 5}, {n: "Rázcestie Kúty", u: "Prešovská ul.", min: 6},
+        {n: "Duklianska", u: "Duklianska ul.", min: 8}, {n: "Trojica", u: "Hlavná ul.", min: 10},
+        {n: "Na Hlavnej", u: "Hlavná ul.", min: 12}, {n: "Veľká pošta", u: "Masarykova ul.", min: 14},
+        {n: "Čierny most", u: "Masarykova ul.", min: 15}, {n: "Železničná stanica", u: "Masarykova ul.", min: 17},
+        {n: "Škára", u: "Arm. gen. Svobodu", min: 19}, {n: "Solivarská", u: "Solivarská ul.", min: 21},
+        {n: "Bohúňova", u: "Bohúňova ul.", min: 22}, {n: "Múzeum Solivar", u: "Smetanova ul.", min: 23},
+        {n: "Solivar", u: "Solivarská ul.", min: 24}
+    ];
+
+    const trasaNajazd = [{n: "Garáž", u: "Bardejovská ul.", min: 0}, {n: "Solivar", u: "Solivarská ul.", min: 7}];
+    const trasaDojazd = [{n: "Nižná Šebastová", u: "Vranovská ul.", min: 0}, {n: "Garáž", u: "Bardejovská ul.", min: 20}];
+
+    const cestovnyPoriadok = [
+        { L: "#", smer: "Technologická Jazda", odchod: "14:00", trasa: trasaNajazd },
+        { L: "1", smer: "Nižná Šebastová", odchod: "14:07", trasa: trasaSmerSebastova },
+        { L: "1", smer: "Solivar", odchod: "14:32", trasa: trasaSmerSolivar },
+        { L: "1", smer: "Nižná Šebastová", odchod: "15:37", trasa: trasaSmerSebastova },
+        { L: "1", smer: "Solivar", odchod: "16:02", trasa: trasaSmerSolivar },
+        { L: "1", smer: "Nižná Šebastová", odchod: "16:37", trasa: trasaSmerSebastova },
+        { L: "1", smer: "Solivar", odchod: "17:02", trasa: trasaSmerSolivar },
+        { L: "1", smer: "Nižná Šebastová", odchod: "17:37", trasa: trasaSmerSebastova },
+        { L: "1", smer: "Solivar", odchod: "18:02", trasa: trasaSmerSolivar },
+        { L: "1", smer: "Nižná Šebastová", odchod: "18:37", trasa: trasaSmerSebastova },
+        { L: "1", smer: "Solivar", odchod: "19:02", trasa: trasaSmerSolivar },
+        { L: "1", smer: "Nižná Šebastová", odchod: "20:07", trasa: trasaSmerSebastova },
+        { L: "1", smer: "Solivar", odchod: "20:32", trasa: trasaSmerSolivar },
+        { L: "1", smer: "Nižná Šebastová", odchod: "21:07", trasa: trasaSmerSebastova },
+        { L: "1", smer: "Solivar", odchod: "21:32", trasa: trasaSmerSolivar },
+        { L: "1", smer: "Nižná Šebastová", odchod: "22:07", trasa: trasaSmerSebastova },
+        { L: "#", smer: "Technologická Jazda", odchod: "22:31", trasa: trasaDojazd }
+    ];
+
+    let indexSpoja = 0; 
+    let currentIndex = 0;
+    let aktivnySpoj, zastavky, startTime;
+    let povolenyPristup = false;
+
+    function pipni() {
+        const sound = document.getElementById('click-sound');
+        if (sound) {
+            sound.currentTime = 0;
+            sound.play().catch(() => {});
+        }
+    }
+
+    function prihlasenie() {
+        const l = localStorage.getItem('srg_linka');
+        const p = localStorage.getItem('srg_poradie');
+        if (l === "11" && p === "42") {
+            povolenyPristup = true;
+            nacitajDataSpoja();
+        } else {
+            document.getElementById('direction').innerText = "NEPLATNÝ KURZ";
+        }
+    }
+
+    function nacitajDataSpoja() {
+        if (!povolenyPristup) return;
+        aktivnySpoj = cestovnyPoriadok[indexSpoja];
+        zastavky = aktivnySpoj.trasa;
+        currentIndex = 0;
+        const [h, m] = aktivnySpoj.odchod.split(':');
+        startTime = new Date();
+        startTime.setHours(parseInt(h), parseInt(m), 0, 0);
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        if (!povolenyPristup || !zastavky) return;
+        const current = zastavky[currentIndex];
+        document.getElementById('direction').innerText = aktivnySpoj.smer;
+        document.getElementById('stop-name').innerText = current.n;
+        document.getElementById('street-name').innerText = current.u;
+        document.querySelector('.line-info').innerText = aktivnySpoj.L;
+        document.querySelector('.stop-count').innerHTML = `<span>${currentIndex}</span>/${zastavky.length - 1}`;
+        document.getElementById('p1').innerText = currentIndex > 0 ? zastavky[currentIndex-1].n : "-------";
+        document.getElementById('n1').innerText = currentIndex < zastavky.length - 1 ? zastavky[currentIndex+1].n : "-------";
+        let step = 620 / (zastavky.length - 1 || 1);
+        document.getElementById('marker').style.left = (170 + (currentIndex * step)) + "px";
+        updateDelay();
+    }
+
+    function nasledujuciSpoj() {
+        if (!povolenyPristup) return;
+        pipni();
+        indexSpoja = (indexSpoja + 1) % cestovnyPoriadok.length;
+        nacitajDataSpoja();
+    }
+
+    function move(dir) {
+        if (!povolenyPristup) return;
+        pipni();
+        currentIndex += dir;
+        if (currentIndex < 0) currentIndex = 0;
+        if (currentIndex >= zastavky.length) currentIndex = zastavky.length - 1;
+        updateDisplay();
+    }
+
+function updateDelay() {
+    if (!povolenyPristup) return;
+    const now = new Date();
+    const plannedTime = new Date(startTime.getTime() + zastavky[currentIndex].min * 60000);
+    let diffMs = plannedTime - now;
+    let absDiff = Math.abs(diffMs);
+    let m = Math.floor(absDiff / 60000);
+    let s = Math.floor((absDiff % 60000) / 1000);
+    
+    const delayEl = document.getElementById('delay');
+    delayEl.innerText = (diffMs < 0 ? "-" : "+") + String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
+
+    // SYNCHRONIZÁCIA S ČASOM
+    if (diffMs > 0) {
+        // Ak je aktuálna sekunda deliteľná dvomi (párna), bude biela, inak červená
+        if (now.getSeconds() % 2 === 0) {
+            delayEl.style.color = "#ffffff";
+        } else {
+            delayEl.style.color = "#ff0000";
+        }
+    } else {
+        // Pri meškaní blikanie vypnuté, stále biela
+        delayEl.style.color = "#ffffff";
+    }
+}
+
+    function logout() {
+        pipni();
+        localStorage.clear();
+        setTimeout(() => { window.location.href = "menu.html"; }, 200);
+    }
+
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('sk-SK');
+        if (povolenyPristup) updateDelay();
+    }, 1000);
+
+    window.onload = prihlasenie;
+</script>
+</body>
+</html>

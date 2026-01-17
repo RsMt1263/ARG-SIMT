@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <title>SRG-6000P Simulátor</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            color: white;
+            overflow: hidden;
+            cursor: pointer; /* Zmení kurzor na celom pozadí pre lepší pocit z klikania */
+        }
+
+        .monitor-container {
+            position: relative;
+            width: 1000px; 
+            height: 650px; 
+            background: url('menu.png') no-repeat center center;
+            background-size: contain;
+        }
+
+        /* Klikateľná zóna pre Kurz */
+        .tlacidlo-kurz {
+            position: absolute;
+            left: 98px;   
+            top: 110px;
+            width: 65px;  
+            height: 55px; 
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Čas zostáva viac vľavo */
+        .cas-box {
+            position: absolute;
+            left: 195px; 
+            top: 175px;
+            pointer-events: none; /* Aby kliknutie prešlo cez text na pozadie */
+        }
+
+        .cas { 
+            font-size: 85px; 
+            margin: 0; 
+            letter-spacing: 2px;
+        }
+
+        /* Ostatné údaje posunuté viac doprava */
+        .ostatne-udaje {
+            position: absolute;
+            left: 210px; 
+            top: 275px;  
+            text-align: left;
+            pointer-events: none;
+        }
+        
+        .den { 
+            font-size: 48px; 
+            margin: 0; 
+        }
+
+        .datum { 
+            font-size: 48px; 
+            margin: 5px 0; 
+        }
+
+        .vozidlo { 
+            font-size: 32px; 
+            margin-top: 15px; 
+        }
+
+        .status-box {
+            position: absolute;
+            right: 255px;
+            top: 310px;
+            border: 3px solid #555;
+            padding: 8px 15px;
+            color: #ff7b00;
+            font-size: 32px;
+            border-radius: 5px;
+            background: rgba(0,0,0,0.7);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="clickSound" src="zvuk1.wav" preload="auto"></audio>
+
+    <div class="monitor-container">
+        
+        <a href="index.html" class="tlacidlo-kurz"></a>
+
+        <div class="cas-box">
+            <div id="hodiny" class="cas">00:00:00</div>
+        </div>
+
+        <div class="ostatne-udaje">
+            <div id="den_v_tyzdni" class="den">...</div>
+            <div id="datum_dnes" class="datum">0000-00-00</div>
+            <div class="vozidlo">Č. vozidla: 803</div>
+        </div>
+
+        <div class="status-box">IP[09]:1</div>
+
+    </div>
+
+    <script>
+        // Funkcia na prehratie zvuku
+        function prehrajZvuk() {
+            const zvuk = document.getElementById('clickSound');
+            zvuk.currentTime = 0; // Resetuje zvuk na začiatok, ak klikneš rýchlo po sebe
+            zvuk.play();
+        }
+
+        // Pridanie eventu na kliknutie kdekoľvek v okne
+        window.addEventListener('mousedown', prehrajZvuk);
+
+        function aktualizujCas() {
+            const teraz = new Date();
+            const dni = ['Nedeľa', 'Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota'];
+
+            const h = String(teraz.getHours()).padStart(2, '0');
+            const m = String(teraz.getMinutes()).padStart(2, '0');
+            const s = String(teraz.getSeconds()).padStart(2, '0');
+            document.getElementById('hodiny').textContent = h + ":" + m + ":" + s;
+
+            document.getElementById('den_v_tyzdni').textContent = dni[teraz.getDay()];
+
+            const rok = teraz.getFullYear();
+            const mesiac = String(teraz.getMonth() + 1).padStart(2, '0');
+            const den = String(teraz.getDate()).padStart(2, '0');
+            document.getElementById('datum_dnes').textContent = rok + "-" + mesiac + "-" + den;
+        }
+
+        setInterval(aktualizujCas, 1000);
+        aktualizujCas();
+    </script>
+
+</body>
+</html>

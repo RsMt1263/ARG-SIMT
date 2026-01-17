@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <title>SRG6000 Simulátor</title>
+    <style>
+        body {
+            background-color: black;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            cursor: pointer; /* Naznačuje, že sa dá klikať */
+        }
+
+        /* Kontajner s obrázkom ako pozadím */
+        .container {
+            position: relative;
+            width: 1024px; 
+            height: 768px;
+            background-image: url('image_ce07c6.png'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        /* Spoločný štýl pre vstupné polia */
+        .input-field {
+            position: absolute;
+            background-color: #2e2e2e;
+            border: 1px solid #555;
+            color: white;
+            font-size: 32px;
+            padding: 5px 10px;
+            outline: none;
+            width: 198px;
+            height: 51px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        /* Pozícia pre políčko Linka */
+        #linka {
+            top: 202px;
+            right: 224px;
+        }
+
+        /* Pozícia pre políčko Poradie */
+        #poradie {
+            top: 321px;
+            right: 224px;
+        }
+
+        /* Tlačidlo Potvrdiť */
+        #btn-potvrd {
+            position: absolute;
+            top: 405px;
+            left: 590px;
+            width: 198px;
+            height: 51px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+        }
+
+        /* Tlačidlo X vľavo hore */
+        #btn-exit {
+            position: absolute;
+            top: 105px;
+            left: 88px;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="clickSound" src="zvuk1.wav" preload="auto"></audio>
+
+    <div class="container">
+        <input type="text" id="linka" class="input-field">
+        <input type="text" id="poradie" class="input-field">
+        
+        <button id="btn-potvrd" onclick="spustitSRG()"></button>
+        
+        <button id="btn-exit" onclick="window.location.href='menu.html'"></button>
+    </div>
+
+<script>
+    // Funkcia na prehratie zvuku
+    function prehrajZvuk() {
+        const zvuk = document.getElementById('clickSound');
+        zvuk.currentTime = 0; // Umožní prehrať zvuk okamžite znova pri rýchlom klikaní
+        zvuk.play();
+    }
+
+    // Spustí zvuk pri kliknutí kdekoľvek na stránke
+    window.addEventListener('mousedown', prehrajZvuk);
+
+    function spustitSRG() {
+        const linkaValue = document.getElementById('linka').value;
+        const poradieValue = document.getElementById('poradie').value;
+
+        if (linkaValue.trim() !== "" && poradieValue.trim() !== "") {
+            localStorage.setItem('srg_linka', linkaValue);
+            localStorage.setItem('srg_poradie', poradieValue);
+            window.location.href = "srg6000.html";
+        } else {
+            alert("Musíš zadať linku aj poradie!");
+        }
+    }
+</script>
+
+</body>
+</html>

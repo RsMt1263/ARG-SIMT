@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <title>R&G SRG-6000P Profesionál</title>
+    <style>
+        body {
+            background-color: #000;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* HLAVNÝ RÁM S TVOJOU TEXTÚROU */
+        .computer-frame {
+            width: 1000px;
+            height: 667px;
+            background-image: url('textura.png'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+
+        /* ABSOLÚTNE POZICOVANIE PRVKOV */
+        
+        #clock {
+            position: absolute;
+            top: 80px;
+            right: 240px;
+            font-size: 40px;
+            color: #fff;
+        }
+
+        #direction {
+            position: absolute;
+            top: 136px;
+            left: 175px;
+            width: 820px;
+            font-size: 35px;
+            color: #ccc;
+            text-align: left;
+            text-transform: none; /* ZRUŠENÝ CAPS LOCK */
+        }
+
+        .line-info {
+            position: absolute;
+            top: 189px;
+            left: 244px;
+            font-size: 22px;
+        }
+        
+        .vehicle-info {
+            position: absolute;
+            top: 189.5px;
+            right: 380px;
+            font-size: 20px;
+        }
+
+        .stop-count {
+            position: absolute;
+            top: 213px;
+            left: 280px;
+            font-size: 20px;
+        }
+
+        #marker {
+            position: absolute;
+            top: 267px;
+            left: 170px;
+            width: 0; height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 22px solid #5cb85c;
+            transition: left 0.5s ease;
+        }
+
+        .current-stop-container {
+            position: absolute;
+            top: 343px;
+            left: 75px;
+            width: 785px;
+            text-align: center;
+        }
+        #stop-name { font-size: 24px; text-transform: none; margin: 0; }
+        #street-name { font-size: 24px; color: #eee; margin: 0; }
+
+        .prev-stops {
+            position: absolute;
+            top: 404px;
+            left: 135px;
+            width: 275px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .stop-item { height: 32px; display: flex; align-items: center; justify-content: center; }
+
+        .next-stops {
+            position: absolute;
+            top: 404.5px;
+            right: 195px;
+            width: 275px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        #delay {
+            position: absolute;
+            top: 412px;
+            left: 330px;
+            width: 280px;
+            font-size: 45px;
+            text-align: center;
+            color: #fff;
+        }
+
+        /* KLIKACIE ZÓNY NAD MODRÝMI ŠÍPKAMI */
+        .btn-overlay {
+            position: absolute;
+            cursor: pointer;
+            z-index: 10;
+            /* background: rgba(255,0,0,0.3); */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="computer-frame">
+        <div id="clock">00:00:00</div>
+        <div id="direction">Nižná Šebastová</div>
+        
+        <div class="line-info">1</div>
+        <div class="vehicle-info">803</div>
+        <div class="stop-count"><span id="curr-idx">1</span>/17</div>
+
+        <div id="marker"></div>
+
+        <div class="current-stop-container">
+            <p id="stop-name">Solivar</p>
+            <p id="street-name">Solivarská ul.</p>
+        </div>
+
+        <div class="prev-stops">
+            <div class="stop-item" id="p2">-</div>
+            <div class="stop-item" id="p1">-</div>
+        </div>
+
+        <div id="delay">+00:56</div>
+
+        <div class="next-stops">
+            <div class="stop-item" id="n1">-</div>
+            <div class="stop-item" id="n2">-</div>
+        </div>
+
+        <div class="btn-overlay" style="top: 475px; left: 335px; width: 75px; height: 65px;" onclick="move(-1)"></div>
+        <div class="btn-overlay" style="top: 475px; left: 565px; width: 75px; height: 65px;" onclick="move(1)"></div>
+    </div>
+
+    <script>
+        const zastavky = [
+            {n: "Solivar", u: "Solivarská ul."},
+            {n: "Múzeum Solivar", u: "Smetanova ul."},
+            {n: "Bohúňova", u: "Bohúňova ul."},
+            {n: "Solivarská", u: "Solivarská ul."},
+            {n: "Škára", u: "Arm. gen. Svobodu"},
+            {n: "Železničná stanica", u: "Masarykova ul."},
+            {n: "Čierny most", u: "Masarykova ul."},
+            {n: "Divadlo J. Záborského", u: "Grešova ul."},
+            {n: "Na Hlavnej", u: "Hlavná ul."},
+            {n: "Trojica", u: "Hlavná ul."},
+            {n: "Duklianska", u: "Duklianska ul."},
+            {n: "Rázcestie Kúty", u: "Prešovská ul."},
+            {n: "Dopravný podnik", u: "Bardejovská ul."},
+            {n: "Šarišské Lúky", u: "Bardejovská ul."},
+            {n: "Vranovská", u: "Vranovská ul."},
+            {n: "Pažica", u: "Vranovská ul."},
+            {n: "Nižná Šebastová", u: "Vranovská ul."}
+        ];
+
+        let currentIndex = 0;
+
+        function updateDisplay() {
+            const current = zastavky[currentIndex];
+            
+            // Tu som zmenil .toUpperCase() na normálne zobrazenie
+            document.getElementById('stop-name').innerText = current.n; 
+            document.getElementById('street-name').innerText = current.u;
+            document.getElementById('curr-idx').innerText = currentIndex + 1;
+
+            document.getElementById('p1').innerText = currentIndex > 0 ? zastavky[currentIndex-1].n : "-------";
+            document.getElementById('p2').innerText = currentIndex > 1 ? zastavky[currentIndex-2].n : "-------";
+
+            document.getElementById('n1').innerText = currentIndex < zastavky.length - 1 ? zastavky[currentIndex+1].n : "-------";
+            document.getElementById('n2').innerText = currentIndex < zastavky.length - 2 ? zastavky[currentIndex+2].n : "-------";
+
+            let markerStart = 170;
+            let markerRange = 620; 
+            let step = markerRange / (zastavky.length - 1);
+            document.getElementById('marker').style.left = (markerStart + (currentIndex * step)) + "px";
+        }
+
+        function move(step) {
+            currentIndex += step;
+            if (currentIndex < 0) currentIndex = 0;
+            if (currentIndex >= zastavky.length) currentIndex = zastavky.length - 1;
+            updateDisplay();
+        }
+
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('sk-SK', { hour12: false });
+        }, 1000);
+
+        updateDisplay();
+    </script>
+</body>
+</html>
