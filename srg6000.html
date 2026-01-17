@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="sk">
 <head>
+
+        <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <meta charset="UTF-8">
     <title>R&G SRG-6000P Profesionál</title>
     <style>
@@ -168,10 +173,6 @@
 </head>
 <body>
     <div class="fullscreen-btn" onclick="toggleFullScreen()" title="Klikni pre Fullscreen"></div>
-
-    <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <div class="computer-frame" onclick="pipni()">
         <div id="clock">00:00:00</div>
@@ -419,6 +420,31 @@ function updateDelay() {
     }, 1000);
 
     window.onload = prihlasenie;
+
+    // Pri každom kliknutí/ťuknutí na obrazovku sa pokúsi aktivovať Fullscreen
+document.addEventListener('click', function() {
+    const doc = document.documentElement;
+    if (!document.fullscreenElement) {
+        if (doc.requestFullscreen) {
+            doc.requestFullscreen();
+        } else if (doc.webkitRequestFullscreen) {
+            doc.webkitRequestFullscreen();
+        }
+    }
+});
+
+// Automatické zväčšenie po zapnutí fullscreenu
+document.addEventListener('fullscreenchange', function() {
+    const frame = document.querySelector('.computer-frame');
+    if (document.fullscreenElement) {
+        // Vypočíta mierku tak, aby to vyplnilo obrazovku tabletu
+        const scale = Math.min(window.innerWidth / 1000, window.innerHeight / 667);
+        frame.style.transform = `scale(${scale})`;
+        frame.style.transformOrigin = 'center center';
+    } else {
+        frame.style.transform = 'scale(1)';
+    }
+});
 </script>
 </body>
 </html>
