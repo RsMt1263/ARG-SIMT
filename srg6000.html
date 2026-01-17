@@ -1,50 +1,24 @@
 <!DOCTYPE html>
 <html lang="sk">
 <head>
-
-        <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>R&G SRG-6000P Profesionál</title>
     <style>
-
-/* --- ÚPLNE NEVIDITEĽNÉ Fullscreen tlačidlo --- */
-        .fullscreen-btn {
-            position: absolute;
-            bottom: 10px;      
-            left: 20px;
-            width: 140px;      
-            height: 55px;      
-            /* Priehľadnosť nastavená na 0 (neviditeľné) */
-            background-color: rgba(255, 0, 0, 0); 
-            /* Rámik odstránený */
-            border: none;                 
-            cursor: pointer;
-            z-index: 999;
-            border-radius: 5px;
-            
-            /* Animácia blikania odstránená, aby to nerušilo */
-            animation: none;
-        }
-
-        @keyframes blikanie {
-            from { opacity: 0.4; }
-            to { opacity: 1; }
-        }
-
         body {
             background-color: #000;
             margin: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
+            /* Zarovnanie na vrch, aby sa pri zväčšení panel neodsunul */
+            align-items: flex-start; 
             height: 100vh;
             font-family: 'Arial', sans-serif;
             font-weight: bold;
             color: white;
-            overflow: hidden;
+            overflow: auto; /* Ak by bol panel väčší ako displej, dá sa ním hýbať */
         }
 
         .computer-frame {
@@ -54,47 +28,18 @@
             background-size: contain;
             background-repeat: no-repeat;
             position: relative;
+            /* Plynulý prechod pri zmene veľkosti */
+            transition: transform 0.2s ease-in-out;
+            transform-origin: top center; 
+            margin-top: 20px;
         }
 
-        #clock {
-            position: absolute;
-            top: 80px;
-            right: 240px;
-            font-size: 40px;
-            color: #fff;
-        }
-
-        #direction {
-            position: absolute;
-            top: 136px;
-            left: 175px;
-            width: 820px;
-            font-size: 35px;
-            color: #ccc;
-            text-align: left;
-        }
-
-        .line-info {
-            position: absolute;
-            top: 189px;
-            left: 244px;
-            font-size: 22px;
-        }
+        #clock { position: absolute; top: 80px; right: 240px; font-size: 40px; color: #fff; }
+        #direction { position: absolute; top: 136px; left: 175px; width: 820px; font-size: 35px; color: #ccc; text-align: left; }
+        .line-info { position: absolute; top: 189px; left: 244px; font-size: 22px; }
+        .vehicle-info { position: absolute; top: 189.5px; right: 380px; font-size: 20px; }
+        .stop-count { position: absolute; top: 213px; left: 280px; font-size: 20px; }
         
-        .vehicle-info {
-            position: absolute;
-            top: 189.5px;
-            right: 380px;
-            font-size: 20px;
-        }
-
-        .stop-count {
-            position: absolute;
-            top: 213px;
-            left: 280px;
-            font-size: 20px;
-        }
-
         #marker {
             position: absolute;
             top: 267px;
@@ -106,90 +51,48 @@
             transition: left 0.5s ease;
         }
 
-        .current-stop-container {
-            position: absolute;
-            top: 343px;
-            left: 75px;
-            width: 785px;
-            text-align: center;
-        }
+        .current-stop-container { position: absolute; top: 343px; left: 75px; width: 785px; text-align: center; }
         #stop-name { font-size: 24px; margin: 0; }
         #street-name { font-size: 24px; color: #eee; margin: 0; }
 
-        .prev-stops {
-            position: absolute;
-            top: 404px;
-            left: 135px;
-            width: 275px;
-            text-align: center;
-            font-size: 18px;
-        }
+        .prev-stops { position: absolute; top: 404px; left: 135px; width: 275px; text-align: center; font-size: 18px; }
+        .next-stops { position: absolute; top: 404.5px; right: 195px; width: 275px; text-align: center; font-size: 18px; }
         .stop-item { height: 32px; display: flex; align-items: center; justify-content: center; }
-
-        .next-stops {
+        
+        #delay {
             position: absolute;
-            top: 404.5px;
-            right: 195px;
-            width: 275px;
+            top: 412px;
+            left: 330px;
+            width: 280px;
+            font-size: 45px;
             text-align: center;
-            font-size: 18px;
+            color: #fff;
         }
 
-/* Rýchlejšie striedanie: 0.5s Biela, 0.5s Červená */
-@keyframes sharp-blink {
-    0%, 49.9% { color: #ffffff; }
-    50%, 100% { color: #ff0000; }
-}
-
-#delay {
-    position: absolute;
-    top: 412px;
-    left: 330px;
-    width: 280px;
-    font-size: 45px;
-    text-align: center;
-    color: #fff;
-    /* Tu môžeš tiež nechať 1s pre istotu */
-    animation-duration: 2s;
-}
-
-        .btn-overlay {
-            position: absolute;
-            cursor: pointer;
-            z-index: 10;
-        }
+        .btn-overlay { position: absolute; cursor: pointer; z-index: 10; }
     </style>
 </head>
 <body>
-    <div class="fullscreen-btn" onclick="toggleFullScreen()" title="Klikni pre Fullscreen"></div>
-
-    <div class="computer-frame" onclick="pipni()">
+    <div class="computer-frame" id="mainFrame" onclick="pipni()">
         <div id="clock">00:00:00</div>
         <div id="direction">---</div>
-        
         <div class="line-info">-</div>
         <div class="vehicle-info">803</div>
         <div class="stop-count"><span id="curr-idx">0</span>/0</div>
-
         <div id="marker"></div>
-
         <div class="current-stop-container">
             <p id="stop-name">---</p>
             <p id="street-name">---</p>
         </div>
-
         <div class="prev-stops">
             <div class="stop-item" id="p2">-</div>
             <div class="stop-item" id="p1">-</div>
         </div>
-
         <div id="delay">00:00</div>
-
         <div class="next-stops">
             <div class="stop-item" id="n1">-</div>
             <div class="stop-item" id="n2">-</div>
         </div>
-
         <div class="btn-overlay" style="top: 155px; left: 95px; width: 65px; height: 65px;" onclick="nasledujuciSpoj()"></div>
         <div class="btn-overlay" style="top: 495px; left: 340px; width: 70px; height: 65px;" onclick="move(-1)"></div>
         <div class="btn-overlay" style="top: 495px; left: 565px; width: 40px; height: 65px;" onclick="move(1)"></div>
@@ -199,30 +102,9 @@
     <audio id="click-sound" src="zvuk1.wav" preload="auto"></audio>
 
 <script>
-    const trasaSmerSebastova = [
-        {n: "Solivar", u: "Solivarská ul.", min: 0}, {n: "Múzeum Solivar", u: "Smetanova ul.", min: 1},
-        {n: "Bohúňova", u: "Bohúňova ul.", min: 2}, {n: "Solivarská", u: "Solivarská ul.", min: 3},
-        {n: "Škára", u: "Arm. gen. Svobodu", min: 5}, {n: "Železničná stanica", u: "Masarykova ul.", min: 7},
-        {n: "Čierny most", u: "Masarykova ul.", min: 9}, {n: "Divadlo J. Záborského", u: "Grešova ul.", min: 11},
-        {n: "Na Hlavnej", u: "Hlavná ul.", min: 12}, {n: "Trojica", u: "Hlavná ul.", min: 14},
-        {n: "Duklianska", u: "Duklianska ul.", min: 16}, {n: "Rázcestie Kúty", u: "Prešovská ul.", min: 18},
-        {n: "Dopravný podnik", u: "Bardejovská ul.", min: 19}, {n: "Šarišské Lúky", u: "Bardejovská ul.", min: 21},
-        {n: "Vranovská", u: "Vranovská ul.", min: 22}, {n: "Pažica", u: "Vranovská ul.", min: 23},
-        {n: "Nižná Šebastová", u: "Vranovská ul.", min: 24}
-    ];
-
-    const trasaSmerSolivar = [
-        {n: "Nižná Šebastová", u: "Vranovská ul.", min: 0}, {n: "Pažica", u: "Vranovská ul.", min: 1},
-        {n: "Vranovská", u: "Vranovská ul.", min: 2}, {n: "Šarišské Lúky", u: "Bardejovská ul.", min: 3},
-        {n: "Dopravný podnik", u: "Bardejovská ul.", min: 5}, {n: "Rázcestie Kúty", u: "Prešovská ul.", min: 6},
-        {n: "Duklianska", u: "Duklianska ul.", min: 8}, {n: "Trojica", u: "Hlavná ul.", min: 10},
-        {n: "Na Hlavnej", u: "Hlavná ul.", min: 12}, {n: "Veľká pošta", u: "Masarykova ul.", min: 14},
-        {n: "Čierny most", u: "Masarykova ul.", min: 15}, {n: "Železničná stanica", u: "Masarykova ul.", min: 17},
-        {n: "Škára", u: "Arm. gen. Svobodu", min: 19}, {n: "Solivarská", u: "Solivarská ul.", min: 21},
-        {n: "Bohúňova", u: "Bohúňova ul.", min: 22}, {n: "Múzeum Solivar", u: "Smetanova ul.", min: 23},
-        {n: "Solivar", u: "Solivarská ul.", min: 24}
-    ];
-
+    // --- TVOJE DÁTA (Trasy a CP) ---
+    const trasaSmerSebastova = [{n: "Solivar", u: "Solivarská ul.", min: 0}, {n: "Múzeum Solivar", u: "Smetanova ul.", min: 1}, {n: "Bohúňova", u: "Bohúňova ul.", min: 2}, {n: "Solivarská", u: "Solivarská ul.", min: 3}, {n: "Škára", u: "Arm. gen. Svobodu", min: 5}, {n: "Železničná stanica", u: "Masarykova ul.", min: 7}, {n: "Čierny most", u: "Masarykova ul.", min: 9}, {n: "Divadlo J. Záborského", u: "Grešova ul.", min: 11}, {n: "Na Hlavnej", u: "Hlavná ul.", min: 12}, {n: "Trojica", u: "Hlavná ul.", min: 14}, {n: "Duklianska", u: "Duklianska ul.", min: 16}, {n: "Rázcestie Kúty", u: "Prešovská ul.", min: 18}, {n: "Dopravný podnik", u: "Bardejovská ul.", min: 19}, {n: "Šarišské Lúky", u: "Bardejovská ul.", min: 21}, {n: "Vranovská", u: "Vranovská ul.", min: 22}, {n: "Pažica", u: "Vranovská ul.", min: 23}, {n: "Nižná Šebastová", u: "Vranovská ul.", min: 24}];
+    const trasaSmerSolivar = [{n: "Nižná Šebastová", u: "Vranovská ul.", min: 0}, {n: "Pažica", u: "Vranovská ul.", min: 1}, {n: "Vranovská", u: "Vranovská ul.", min: 2}, {n: "Šarišské Lúky", u: "Bardejovská ul.", min: 3}, {n: "Dopravný podnik", u: "Bardejovská ul.", min: 5}, {n: "Rázcestie Kúty", u: "Prešovská ul.", min: 6}, {n: "Duklianska", u: "Duklianska ul.", min: 8}, {n: "Trojica", u: "Hlavná ul.", min: 10}, {n: "Na Hlavnej", u: "Hlavná ul.", min: 12}, {n: "Veľká pošta", u: "Masarykova ul.", min: 14}, {n: "Čierny most", u: "Masarykova ul.", min: 15}, {n: "Železničná stanica", u: "Masarykova ul.", min: 17}, {n: "Škára", u: "Arm. gen. Svobodu", min: 19}, {n: "Solivarská", u: "Solivarská ul.", min: 21}, {n: "Bohúňova", u: "Bohúňova ul.", min: 22}, {n: "Múzeum Solivar", u: "Smetanova ul.", min: 23}, {n: "Solivar", u: "Solivarská ul.", min: 24}];
     const trasaNajazd = [{n: "Garáž", u: "Bardejovská ul.", min: 0}, {n: "Solivar", u: "Solivarská ul.", min: 7}];
     const trasaDojazd = [{n: "Nižná Šebastová", u: "Vranovská ul.", min: 0}, {n: "Garáž", u: "Bardejovská ul.", min: 20}];
 
@@ -251,12 +133,20 @@
     let aktivnySpoj, zastavky, startTime;
     let povolenyPristup = false;
 
+    // --- FUNKCIA PRE AUTOMATICKÉ ZVÄČŠENIE ---
+    function zvacsiPanel() {
+        const frame = document.getElementById('mainFrame');
+        // Vypočíta najlepšie zväčšenie pre tvoj tablet (nechá 5% rezervu)
+        const scale = Math.min(window.innerWidth / 1000, window.innerHeight / 700) * 0.95;
+        frame.style.transform = `scale(${scale})`;
+    }
+
+    // Spustí sa pri načítaní a pri každej zmene otočenia tabletu
+    window.addEventListener('resize', zvacsiPanel);
+
     function pipni() {
         const sound = document.getElementById('click-sound');
-        if (sound) {
-            sound.currentTime = 0;
-            sound.play().catch(() => {});
-        }
+        if (sound) { sound.currentTime = 0; sound.play().catch(() => {}); }
     }
 
     function prihlasenie() {
@@ -268,6 +158,7 @@
         } else {
             document.getElementById('direction').innerText = "NEPLATNÝ KURZ";
         }
+        zvacsiPanel(); // Zväčší panel hneď po prihlásení
     }
 
     function nacitajDataSpoja() {
@@ -281,35 +172,23 @@
         updateDisplay();
     }
 
-function updateDisplay() {
+    function updateDisplay() {
         if (!povolenyPristup || !zastavky) return;
         const current = zastavky[currentIndex];
-        
-        // Základné info
         document.getElementById('direction').innerText = aktivnySpoj.smer;
         document.getElementById('stop-name').innerText = current.n;
         document.getElementById('street-name').innerText = current.u;
         document.querySelector('.line-info').innerText = aktivnySpoj.L;
         document.querySelector('.stop-count').innerHTML = `<span>${currentIndex}</span>/${zastavky.length - 1}`;
-
-        // --- PREDCHÁDZAJÚCE ZASTÁVKY ---
-        // p1: jedna dozadu
         document.getElementById('p1').innerText = currentIndex > 0 ? zastavky[currentIndex - 1].n : "-------";
-        // p2: dve dozadu
         document.getElementById('p2').innerText = currentIndex > 1 ? zastavky[currentIndex - 2].n : "-------";
-
-        // --- NASLEDUJÚCE ZASTÁVKY ---
-        // n1: jedna dopredu
         document.getElementById('n1').innerText = currentIndex < zastavky.length - 1 ? zastavky[currentIndex + 1].n : "-------";
-        // n2: dve dopredu
         document.getElementById('n2').innerText = currentIndex < zastavky.length - 2 ? zastavky[currentIndex + 2].n : "-------";
-
-        // Posun markera na lište
         let step = 620 / (zastavky.length - 1 || 1);
         document.getElementById('marker').style.left = (170 + (currentIndex * step)) + "px";
-        
         updateDelay();
     }
+
     function nasledujuciSpoj() {
         if (!povolenyPristup) return;
         pipni();
@@ -326,76 +205,22 @@ function updateDisplay() {
         updateDisplay();
     }
 
-// Táto funkcia sa spustí vždy, keď sa zmení veľkosť okna alebo zapne fullscreen
-function autoScale() {
-    const frame = document.querySelector('.computer-frame');
-    if (document.fullscreenElement) {
-        // Vypočíta pomer medzi monitorom a tvojím rámom (1000px)
-        const scale = Math.min(window.innerWidth / 1000, window.innerHeight / 667);
-        frame.style.transform = `scale(${scale})`;
-        frame.style.transformOrigin = 'center center';
-    } else {
-        // Keď vypneš fullscreen, vráti sa do pôvodnej veľkosti
-        frame.style.transform = 'scale(1)';
-    }
-}
-
-// Sledujeme zmenu fullscreenu
-document.addEventListener('fullscreenchange', autoScale);
-
-function toggleFullScreen(event) {
-    if (event) event.stopPropagation();
-    
-    const doc = document.documentElement;
-    const frame = document.querySelector('.computer-frame');
-
-    if (!document.fullscreenElement) {
-        // Tento príkaz sa pokúša o "Immersive Mode" na Androide
-        const requestMethod = doc.requestFullscreen || doc.webkitRequestFullscreen;
-        
-        if (requestMethod) {
-            requestMethod.call(doc).then(() => {
-                // Vynútené zväčšenie na maximum
-                const scale = Math.max(window.innerWidth / 1000, window.innerHeight / 667);
-                frame.style.transform = `scale(${scale})`;
-                frame.style.transformOrigin = 'center center';
-                
-                // Skrytie kurzora pre lepší pocit z dotyku
-                document.body.style.cursor = 'none';
-            });
-        }
-    } else {
-        if (document.exitFullscreen) { document.exitFullscreen(); }
-        frame.style.transform = 'scale(1)';
-        document.body.style.cursor = 'default';
-    }
-}
-
-function updateDelay() {
-    if (!povolenyPristup) return;
-    const now = new Date();
-    const plannedTime = new Date(startTime.getTime() + zastavky[currentIndex].min * 60000);
-    let diffMs = plannedTime - now;
-    let absDiff = Math.abs(diffMs);
-    let m = Math.floor(absDiff / 60000);
-    let s = Math.floor((absDiff % 60000) / 1000);
-    
-    const delayEl = document.getElementById('delay');
-    delayEl.innerText = (diffMs < 0 ? "-" : "+") + String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
-
-    // SYNCHRONIZÁCIA S ČASOM
-    if (diffMs > 0) {
-        // Ak je aktuálna sekunda deliteľná dvomi (párna), bude biela, inak červená
-        if (now.getSeconds() % 2 === 0) {
-            delayEl.style.color = "#ffffff";
+    function updateDelay() {
+        if (!povolenyPristup) return;
+        const now = new Date();
+        const plannedTime = new Date(startTime.getTime() + zastavky[currentIndex].min * 60000);
+        let diffMs = plannedTime - now;
+        let absDiff = Math.abs(diffMs);
+        let m = Math.floor(absDiff / 60000);
+        let s = Math.floor((absDiff % 60000) / 1000);
+        const delayEl = document.getElementById('delay');
+        delayEl.innerText = (diffMs < 0 ? "-" : "+") + String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
+        if (diffMs > 0) {
+            delayEl.style.color = (now.getSeconds() % 2 === 0) ? "#ffffff" : "#ff0000";
         } else {
-            delayEl.style.color = "#ff0000";
+            delayEl.style.color = "#ffffff";
         }
-    } else {
-        // Pri meškaní blikanie vypnuté, stále biela
-        delayEl.style.color = "#ffffff";
     }
-}
 
     function logout() {
         pipni();
@@ -409,19 +234,6 @@ function updateDelay() {
     }, 1000);
 
     window.onload = prihlasenie;
-
-// Automatické zväčšenie po zapnutí fullscreenu
-document.addEventListener('fullscreenchange', function() {
-    const frame = document.querySelector('.computer-frame');
-    if (document.fullscreenElement) {
-        // Vypočíta mierku tak, aby to vyplnilo obrazovku tabletu
-        const scale = Math.min(window.innerWidth / 1000, window.innerHeight / 667);
-        frame.style.transform = `scale(${scale})`;
-        frame.style.transformOrigin = 'center center';
-    } else {
-        frame.style.transform = 'scale(1)';
-    }
-});
 </script>
 </body>
 </html>
